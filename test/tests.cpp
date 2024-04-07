@@ -64,3 +64,15 @@ TEST_F(TimedDoorTest, NoExceptionWhenNoTimeout) {
   door->lock();
   EXPECT_NO_THROW(door->getTimeOut());
 }
+
+TEST_F(TimedDoorTest, ThrowExceptionWhenLockingClosedDoor) {
+  EXPECT_THROW(door->lock(), std::logic_error);
+}
+
+TEST_F(TimedDoorTest, NoExceptionWhenUnlockingClosedDoor) {
+  EXPECT_NO_THROW(door->unlock());
+}
+
+TEST_F(TimedDoorTest, CorrectTimeoutValue) {
+  EXPECT_EQ(door->getTimeOut(), 5);
+}
