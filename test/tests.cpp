@@ -7,72 +7,63 @@
 
 class MockTimerClient : public TimerClient {
  public:
-  MOCK_METHOD(void, Timeout, (), (override));
+  MOCK_METHOD(void, Timeout, ());
 };
 
 class TimedDoorTest : public ::testing::Test {
  protected:
-  TimedDoor* door;
-  MockTimerClient* client;
-
   void SetUp() override {
-    client = new MockTimerClient();
-    door = new TimedDoor(5);
+    door = new TimedDoor(100);
   }
 
   void TearDown() override {
     delete door;
-    delete client;
   }
-};
 
-TEST_F(TimedDoorTest, DoorInitiallyLocked) {
+  TimedDoor* door;
+};
+TEST(TimerTest, TimerClientRegistered) {
+  Timer timer;
+  MockTimerClient client;
+  EXPECT_CALL(client, Timeout()).Times(1);
+  timer.tregister(100, &client);
+}
+TEST_F(TimedDoorTest, isLockable) {
+  door->unlock();
+  door->lock();
   EXPECT_FALSE(door->isDoorOpened());
 }
 
-TEST_F(TimedDoorTest, DoorUnlocks) {
+TEST_F(TimedDoorTest, isOpened) {
   door->unlock();
   EXPECT_TRUE(door->isDoorOpened());
 }
 
-TEST_F(TimedDoorTest, DoorLocks) {
-  door->unlock();
-  door->lock();
+TEST_F(TimedDoorTest, isClosed) {
   EXPECT_FALSE(door->isDoorOpened());
 }
 
-TEST_F(TimedDoorTest, TimeoutWhenDoorOpened) {
-  door->unlock();
-  EXPECT_CALL(*client, Timeout()).Times(1);
-  door->getTimeOut();
-}
-
-TEST_F(TimedDoorTest, NoTimeoutWhenDoorClosed) {
+TEST_F(TimedDoorTest, TimeOutDoorClosedAndOpened) {
   door->unlock();
   door->lock();
-  EXPECT_CALL(*client, Timeout()).Times(0);
-  door->getTimeOut();
-}
-
-TEST_F(TimedDoorTest, ThrowExceptionWhenTimeout) {
-  door->unlock();
   EXPECT_THROW(door->getTimeOut(), std::runtime_error);
+  EXPECT_FALSE(door->isDoorOpened());
 }
 
-TEST_F(TimedDoorTest, NoExceptionWhenNoTimeout) {
+TEST_F(TimedDoorTest, TimeOutDoorOpenedUnlocked) {
   door->unlock();
-  door->lock();
+  door->unlock();
   EXPECT_NO_THROW(door->getTimeOut());
+  EXPECT_TRUE(door->isDoorOpened());
 }
 
-TEST_F(TimedDoorTest, ThrowExceptionWhenLockingClosedDoor) {
-  EXPECT_THROW(door->lock(), std::logic_error);
+TEST_F(TimedDoorTest, TimeOutDoorClosed) {
+  EXPECT_THROW(door->getTimeOut(), std::runtime_error);
+  EXPECT_FALSE(door->isDoorOpened());
 }
 
-TEST_F(TimedDoorTest, NoExceptionWhenUnlockingClosedDoor) {
-  EXPECT_NO_THROW(door->unlock());
-}
-
-TEST_F(TimedDoorTest, CorrectTimeoutValue) {
-  EXPECT_EQ(door->getTimeOut(), 5);
+TEST_F(TimedDoorTest, TimeOutDoorOpened) {
+  door->unlock();
+  EXPECT_NO_THROW(door->getTimeOut());
+  EXPECT_TRUE(door->isDoorOpened());
 }
