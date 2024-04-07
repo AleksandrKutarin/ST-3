@@ -44,23 +44,23 @@ TEST_F(TimedDoorTest, DoorLocks) {
 TEST_F(TimedDoorTest, TimeoutWhenDoorOpened) {
   door->unlock();
   EXPECT_CALL(*client, Timeout()).Times(1);
-  door->DoorTimeOut();
+  door->getTimeOut();
 }
 
 TEST_F(TimedDoorTest, NoTimeoutWhenDoorClosed) {
   door->unlock();
   door->lock();
   EXPECT_CALL(*client, Timeout()).Times(0);
-  door->DoorTimeOut();
+  door->getTimeOut();
 }
 
 TEST_F(TimedDoorTest, ThrowExceptionWhenTimeout) {
   door->unlock();
-  EXPECT_THROW(door->DoorTimeOut(), std::runtime_error);
+  EXPECT_THROW(door->getTimeOut(), std::runtime_error);
 }
 
 TEST_F(TimedDoorTest, NoExceptionWhenNoTimeout) {
   door->unlock();
   door->lock();
-  EXPECT_NO_THROW(door->DoorTimeOut());
+  EXPECT_NO_THROW(door->getTimeOut());
 }
